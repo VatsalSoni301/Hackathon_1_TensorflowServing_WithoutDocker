@@ -17,12 +17,14 @@ tf.app.flags.DEFINE_string('work_dir', '/tmp', 'Working directory. ')
 FLAGS = tf.app.flags.FLAGS
 
 def do_inference(hostport, work_dir, concurrency, num_tests):
-  test_data_set = mnist_input_data.read_data_sets(work_dir).test
+# def do_inference(num_tests):
+  test_data_set = mnist_input_data.read_data_sets("/tmp").test
   fs = []
   fl = []
   for _ in range(num_tests):
     image, label = test_data_set.next_batch(1)
     r=image[0].tolist()
+    print(r)
     data={"signature_name":"predict_images","instances":[{"images":r}]}
     data1 = json.dumps(data)
     url="http://localhost:8501/v1/models/my_model:predict"
@@ -30,6 +32,7 @@ def do_inference(hostport, work_dir, concurrency, num_tests):
     abcd = response.json()
     fs.append(numpy.argmax(abcd['predictions'][0]))
     fl.append(label)
+    break
   print(fs)
   return accuracy_score(fs,fl)
 
@@ -42,6 +45,7 @@ def main(_):
     return
   acc = do_inference(FLAGS.server, FLAGS.work_dir,
                             FLAGS.concurrency, FLAGS.num_tests)
+  # acc = do_inference(1000)
   print('\nAccuracy: %s%%' % (acc * 100))
 
 
